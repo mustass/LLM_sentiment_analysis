@@ -1,0 +1,5 @@
+
+class_name: src.models.sa.bert_base.BERT
+params:
+  n_clas: 3
+  dropout: 0.2

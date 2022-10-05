@@ -1,0 +1,14 @@
+pytest
+wheel
+build
+isort
+black
+flake8
+
+jupyterlab
+pytorch-lightning
+hydra
+omegaconf
+torch
+numpy
+wandb
