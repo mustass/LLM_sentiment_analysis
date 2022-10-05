@@ -2,6 +2,7 @@ import gzip
 import pickle
 import pandas as pd
 import numpy as np
+import csv
 import requests
 import zlib
 import json
@@ -45,11 +46,9 @@ def fetch_raw_dataset(dataset_name,wd):
                     try:
                         obj = json.loads(review)
                         try:
-                            outfile.write('"' + obj["textReview"] + '"' + "," +
-                                          dataset_name)
+                            outfile.write(f'"{obj["textReview"]}";{obj["overall"]};{dataset_name}')
                         except KeyError:
-                            outfile.write('"' + obj["reviewText"] + '"' + "," +
-                                          dataset_name)
+                            outfile.write(f'"{obj["reviewText"]}";{obj["overall"]};{dataset_name}')
                         outfile.write("\n")
                     except:
                         pass  #warnings.warn("A record in dataset "+dataset_name+" has been skipped as it was corrupted.")
@@ -145,23 +144,23 @@ def clean_data(config, wd):
         pass
 
     # drop any rows which have missing reviews, class or a class which is not in our class dict
-
+    
     nrows = df.shape[0]
     df['review'].replace('', np.nan, inplace=True)
     df.dropna(subset=['review'], inplace=True)
-    df['class'].replace('', np.nan, inplace=True)
-    df.dropna(subset=['class'], inplace=True)
+    df['score'].replace('', np.nan, inplace=True)
+    df.dropna(subset=['score'], inplace=True)
     print('Nr. rows dropped because containing NaN:', nrows - df.shape[0])
 
-    nrows = df.shape[0]
-    df = df[df['class'].isin(datasets)]
+    #nrows = df.shape[0]
+    #df = df[df['score'].isin()]
 
-    print('Nr. rows dropped because class label was incorrect:',
-          nrows - df.shape[0])
+    #print('Nr. rows dropped because score label was incorrect:',
+    #      nrows - df.shape[0])
 
-    # One hot encode class labels
+    # One hot encode score labels
     labelencoder = LabelEncoder()
-    df['class'] = labelencoder.fit_transform(df['class'])
+    df['score'] = labelencoder.fit_transform(df['score'])
 
     # Run this if we want to see some info on string lengths
     # check_string_lengths(df)
@@ -170,10 +169,10 @@ def clean_data(config, wd):
     # split train dataset into train, validation and test sets
     train_text, test_text, train_labels, test_labels = train_test_split(
         df['review'],
-        df['class'],
+        df['score'],
         random_state=seed,
         test_size=split1,
-        stratify=df['class'])
+        stratify=df['score'])
 
     train_text, val_text, train_labels, val_labels = train_test_split(
         train_text,
@@ -183,20 +182,20 @@ def clean_data(config, wd):
         stratify=train_labels)
 
     tokenizer = BertTokenizerFast.from_pretrained('bert-base-uncased')
-
-    tokens_train = tokenizer.batch_encode_plus(train_text.tolist(),
+    
+    tokens_train = tokenizer(train_text.tolist(),
                                                max_length=max_length,
                                                padding=True,
                                                truncation=True)
 
     # tokenize and encode sequences in the validation set
-    tokens_val = tokenizer.batch_encode_plus(val_text.tolist(),
+    tokens_val = tokenizer(val_text.tolist(),
                                              max_length=max_length,
                                              padding=True,
                                              truncation=True)
 
     # tokenize and encode sequences in the test set
-    tokens_test = tokenizer.batch_encode_plus(test_text.tolist(),
+    tokens_test = tokenizer(test_text.tolist(),
                                               max_length=max_length,
                                               padding=True,
                                               truncation=True)
@@ -226,14 +225,14 @@ def check_and_load_raw(file):
 
     try:
         df = pd.read_csv(file,
-                         error_bad_lines=False,
-                         names=['review', 'class'])
+                         error_bad_lines=False, delimiter=';', quoting=csv.QUOTE_NONE,
+                         names=['review', 'score', 'category'])
         return df
     except Exception as ex:
         if type(ex) == FileNotFoundError:
             raise FileNotFoundError(
                 "The /data/SA_amazon_data/raw/" + str(file) +
-                "file does not exists. Fetch the dataset before contiunuing")
+                "file does not exist. Fetch the dataset before contiunuing")
 
 
 def check_string_lengths(df):
@@ -260,3 +259,11 @@ def pickle_TensorDataset(dataset, experiment_name, dataset_name, wd):
     pickle.dump(dataset, f)
     f.close()
  
+def read_in_chunks(file_object, chunk_size=1024):
+    """Lazy function (generator) to read a file piece by piece.
+    Default chunk size: 1k."""
+    while True:
+        data = file_object.read(chunk_size)
+        if not data:
+            break
+        yield data

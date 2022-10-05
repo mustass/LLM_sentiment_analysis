@@ -9,7 +9,7 @@ class LitSaModel(pl.LightningModule):
         super(LitSaModel, self).__init__()
         self.cfg = cfg
         self.model = load_obj(cfg.model.class_name)(cfg=cfg)
-        self.loss = load_obj(cfg.loss.class_name)
+        self.loss = load_obj(cfg.loss.class_name)()
 
         self.metrics = torch.nn.ModuleDict(
             {

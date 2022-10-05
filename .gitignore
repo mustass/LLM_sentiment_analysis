@@ -104,3 +104,5 @@ cookiecutter-pypackage-env/
 
 data/SA_amazon_data
 outputs/
+
+*.ipynb_checkpoints
