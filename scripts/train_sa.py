@@ -1,8 +1,6 @@
 import os
 import warnings
 from pathlib import Path
-import sys
-sys.path.append('../src')
 import hydra
 import pytorch_lightning as pl
 import torch
