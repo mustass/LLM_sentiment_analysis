@@ -5,7 +5,7 @@ defaults:
   - datamodule: amazon_reviews_sa
   - inference: basic
   - logging: wandb
-  - loss: NLLLoss
+  - loss: cross_entropy
   - metric: accuracy
   - model: basic_bert_model
   - optimizer: adamw
@@ -16,7 +16,7 @@ defaults:
   - override hydra/job_logging: colorlog
 
 general:
-  run_name: test1
+  run_name: Base_model_mini_dataset
   logs_folder_name: logs
   workspace: dmiai-mh
   project_name: sentiment-analysis-tests

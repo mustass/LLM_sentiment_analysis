@@ -63,7 +63,7 @@ def run(cfg: DictConfig) -> None:
             # extract file name without folder
             save_name = os.path.basename(os.path.normpath(best_path))
             model = model.load_from_checkpoint(
-                best_path, cfg=cfg, tag_to_idx=dm.tag_to_idx, strict=False
+                best_path, cfg=cfg, strict=False
             )
             model_name = Path(
                 cfg.callbacks.model_checkpoint.params.dirpath,
