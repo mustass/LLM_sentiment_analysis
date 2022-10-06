@@ -16,3 +16,5 @@ hydra-core
 pytorch-lightning
 hydra_colorlog
 rich
+six
+filelock
