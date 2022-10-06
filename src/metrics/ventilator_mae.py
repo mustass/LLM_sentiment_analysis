@@ -16,7 +16,9 @@ class VentilatorMAE(nn.Module):
         """
         super().__init__()
 
-    def __call__(self, predictions: torch.Tensor, labels: torch.Tensor, u_out: torch.Tensor) -> torch.Tensor:
+    def __call__(
+        self, predictions: torch.Tensor, labels: torch.Tensor, u_out: torch.Tensor
+    ) -> torch.Tensor:
         """
         Calculate f1 score based on averaging method defined in init.
 

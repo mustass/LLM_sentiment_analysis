@@ -16,3 +16,4 @@ joblib
 pyyaml
 azureml-core
 azureml-dataset-runtime
+nltk

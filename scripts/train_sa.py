@@ -11,7 +11,7 @@ from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
 from src.utils.technical_utils import load_obj
 from src.utils.utils import set_seed, save_useful_info
 
-warnings.filterwarnings('ignore')
+warnings.filterwarnings("ignore")
 
 
 def run(cfg: DictConfig) -> None:
@@ -39,8 +39,8 @@ def run(cfg: DictConfig) -> None:
     loggers = []
     if cfg.logging.log:
         for logger in cfg.logging.loggers:
-            if 'experiment_name' in logger.params.keys():
-                logger.params['experiment_name'] = run_name
+            if "experiment_name" in logger.params.keys():
+                logger.params["experiment_name"] = run_name
             loggers.append(load_obj(logger.class_name)(**logger.params))
 
     callbacks.append(EarlyStopping(**cfg.callbacks.early_stopping.params))
@@ -62,25 +62,28 @@ def run(cfg: DictConfig) -> None:
             best_path = trainer.checkpoint_callback.best_model_path  # type: ignore
             # extract file name without folder
             save_name = os.path.basename(os.path.normpath(best_path))
-            model = model.load_from_checkpoint(best_path, cfg=cfg, tag_to_idx=dm.tag_to_idx, strict=False)
+            model = model.load_from_checkpoint(
+                best_path, cfg=cfg, tag_to_idx=dm.tag_to_idx, strict=False
+            )
             model_name = Path(
-                cfg.callbacks.model_checkpoint.params.dirpath, f'best_{save_name}'.replace('.ckpt', '.pth')
+                cfg.callbacks.model_checkpoint.params.dirpath,
+                f"best_{save_name}".replace(".ckpt", ".pth"),
             ).as_posix()
             torch.save(model.model.state_dict(), model_name)
         else:
-            os.makedirs('saved_models', exist_ok=True)
-            model_name = 'saved_models/last.pth'
+            os.makedirs("saved_models", exist_ok=True)
+            model_name = "saved_models/last.pth"
             torch.save(model.model.state_dict(), model_name)
 
 
-@hydra.main(config_path='../configs', config_name='amazon_config')
+@hydra.main(config_path="../configs", config_name="amazon_config")
 def run_model(cfg: DictConfig) -> None:
-    os.makedirs('logs', exist_ok=True)
+    os.makedirs("logs", exist_ok=True)
     print(OmegaConf.to_yaml(cfg))
     if cfg.general.log_code:
         save_useful_info(os.path.basename(__file__))
     run(cfg)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     run_model()

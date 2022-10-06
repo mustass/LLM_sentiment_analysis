@@ -8,9 +8,9 @@ import numpy as np
 def format_prediction_string(boxes, scores):
     pred_strings = []
     for s, b in zip(scores, boxes.astype(int)):
-        pred_strings.append(f'{s:.4f} {b[0]} {b[1]} {b[2] - b[0]} {b[3] - b[1]}')
+        pred_strings.append(f"{s:.4f} {b[0]} {b[1]} {b[2] - b[0]} {b[3] - b[1]}")
 
-    return ' '.join(pred_strings)
+    return " ".join(pred_strings)
 
 
 def freeze_until(net: Any, param_name: str = None) -> None:
@@ -51,7 +51,9 @@ def stratified_group_k_fold(y, groups, k, seed=None):
         y_counts_per_fold[fold] += y_counts
         std_per_label = []
         for label in range(labels_num):
-            label_std = np.std([y_counts_per_fold[i][label] / y_distr[label] for i in range(k)])
+            label_std = np.std(
+                [y_counts_per_fold[i][label] / y_distr[label] for i in range(k)]
+            )
             std_per_label.append(label_std)
         y_counts_per_fold[fold] -= y_counts
         return np.mean(std_per_label)
