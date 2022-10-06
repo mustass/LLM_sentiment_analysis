@@ -17,3 +17,5 @@ pyyaml
 azureml-core
 azureml-dataset-runtime
 nltk
+hydra-core
+pytorch-lightning
