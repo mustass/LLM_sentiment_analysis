@@ -4,7 +4,7 @@ defaults:
   - private: default
   - datamodule: amazon_reviews_sa
   - inference: basic
-  - logging: loggers #wandb
+  - logging: wandb
   - loss: NLLLoss
   - metric: accuracy
   - model: basic_bert_model
@@ -21,7 +21,7 @@ general:
   workspace: dmiai-mh
   project_name: sentiment-analysis-tests
   device: cpu
-  log_code: False
+  log_code: True
   save_pytorch_model: True
   save_best: True
   convert_to_jit: True
