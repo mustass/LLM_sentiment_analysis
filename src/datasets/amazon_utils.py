@@ -46,9 +46,9 @@ def fetch_raw_dataset(dataset_name,wd):
                     try:
                         obj = json.loads(review)
                         try:
-                            outfile.write(f'"{obj["textReview"]}";{obj["overall"]};{dataset_name}')
+                            outfile.write(f'{obj["textReview"]};{obj["overall"]};{dataset_name}')
                         except KeyError:
-                            outfile.write(f'"{obj["reviewText"]}";{obj["overall"]};{dataset_name}')
+                            outfile.write(f'{obj["reviewText"]};{obj["overall"]};{dataset_name}')
                         outfile.write("\n")
                     except:
                         pass  #warnings.warn("A record in dataset "+dataset_name+" has been skipped as it was corrupted.")
