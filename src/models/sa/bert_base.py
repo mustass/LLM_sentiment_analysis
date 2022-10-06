@@ -3,7 +3,7 @@ from regex import X
 from torch import nn
 
 from src.utils.technical_utils import load_obj
-from transformers import AutoModel
+from transformers import BertForSequenceClassification
 
 
 class BERT(nn.Module):
@@ -16,27 +16,19 @@ class BERT(nn.Module):
         """
         super().__init__()
 
-        self.bert = AutoModel.from_pretrained("bert-base-uncased")
+        self.model = BertForSequenceClassification.from_pretrained("bert-base-uncased", num_labels = cfg.model.params.n_clas, return_dict = cfg.model.params.return_dict)
 
-        for param in self.bert.parameters():
-            param.requires_grad = False
- 
-        self.dropout = nn.Dropout(cfg.model.params.dropout)
-        # relu activation function
-        self.relu = nn.ReLU()
-        # dense layer 1
-        self.fc1 = nn.Linear(768, 512)
-        # dense layer 2 (Output layer)
-        self.fc2 = nn.Linear(768, cfg.model.params.n_clas)
-        # softmax activation function
-        self.softmax = nn.LogSoftmax(dim=1)
+        #self.model.classifier.add_module('bert_activation', nn.ReLU())
+        #self.model.classifier.add_module('prediction', nn.Linear(cfg.model.params.hidden_size, cfg.model.params.n_clas))
+
+
+        if cfg.model.params.finetune:
+            for param in self.model.bert.parameters():
+                param.requires_grad = False
+
+            for param in self.model.classifier.parameters():
+                param.requires_grad = True
 
     def forward(self, x, mask):
-        _, cls_hs = self.bert(x, attention_mask=mask, return_dict=False)
-        x = self.dropout(cls_hs)
-        x = self.fc2(x)
-        #x = self.relu(x)
-        #x = self.dropout(x)
-        #x = self.fc2(x)
-        x = self.softmax(x)
-        return x
+        output = self.model(x, mask)
+        return output['logits']
