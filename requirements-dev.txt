@@ -6,9 +6,20 @@ black
 flake8
 
 jupyterlab
-pytorch-lightning
-hydra
-omegaconf
 torch
+tqdm
+transformers
+pandas
 numpy
 wandb
+ftfy
+regex
+scikit-learn
+click
+joblib
+pyyaml
+nltk
+hydra-core
+pytorch-lightning
+hydra_colorlog
+rich
