@@ -1,4 +1,4 @@
-datamodule_name: src.lightning_classes.datamodule_amazon.AmazonDataModule
+datamodule_name: methazAI.lightning_classes.datamodule_amazon.AmazonDataModule
 folder_path: ./data/SA_amazon_data
 train_val_test_splits: [0.6,0.2,0.2]
 max_seq_length: 100 # Max review string length for the Tokenizer

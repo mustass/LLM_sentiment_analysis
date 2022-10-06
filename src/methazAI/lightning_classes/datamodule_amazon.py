@@ -1,6 +1,6 @@
 from pytorch_lightning import LightningDataModule
 from torch.utils.data import DataLoader
-from src.datasets.amazon_utils import ensemble, clean_data
+from methazAI.datasets.amazon_utils import ensemble, clean_data
 import gzip, pickle
 from hydra.utils import get_original_cwd
 from typing import Optional

@@ -2,7 +2,7 @@ from typing import Dict, Union
 import pytorch_lightning as pl
 import torch
 from omegaconf import DictConfig
-from src.utils.technical_utils import load_obj
+from methazAI.utils.technical_utils import load_obj
 
 
 class LitSaModel(pl.LightningModule):

@@ -19,3 +19,5 @@ azureml-dataset-runtime
 nltk
 hydra-core
 pytorch-lightning
+hydra_colorlog
+rich

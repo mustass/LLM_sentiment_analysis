@@ -1,5 +1,5 @@
 
-class_name: src.optimizers.adan.Adan
+class_name: methazAI.optimizers.adan.Adan
 params:
   lr: ${training.lr}
 #    decoder_lr: 0.01

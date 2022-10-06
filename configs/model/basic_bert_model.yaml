@@ -1,5 +1,5 @@
 
-class_name: src.models.sa.bert_base.BERT
+class_name: methazAI.models.sa.bert_base.BERT
 params:
   n_clas: 5
   hidden_size: 200

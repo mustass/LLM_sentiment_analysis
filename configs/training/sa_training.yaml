@@ -4,4 +4,4 @@ mode: "max"
 seed: 666
 debug: True
 n_classes: 5
-lightning_module_name: src.lightning_classes.lightningmodule_sa.LitSaModel
+lightning_module_name: methazAI.lightning_classes.lightningmodule_sa.LitSaModel

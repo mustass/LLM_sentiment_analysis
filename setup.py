@@ -24,7 +24,7 @@ def load_requirements(
 
 
 setup(
-    package_dir={"": "."},
+    package_dir={"": "./src"},
     python_requires=">=3.6",
     install_requires=load_requirements(),
     extras_require={

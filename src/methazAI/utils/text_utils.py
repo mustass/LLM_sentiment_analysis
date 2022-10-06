@@ -8,7 +8,7 @@ import torch.nn as nn
 from gensim.models import FastText
 from omegaconf import DictConfig
 
-from src.utils.technical_utils import load_obj
+from methazAI.utils.technical_utils import load_obj
 
 
 def _generate_tag_to_idx(cfg: DictConfig, entities_names: List) -> dict:

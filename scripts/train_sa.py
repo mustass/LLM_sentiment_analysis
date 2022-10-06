@@ -1,15 +1,16 @@
 import os
 import warnings
 from pathlib import Path
-
+import sys
+sys.path.append('../src')
 import hydra
 import pytorch_lightning as pl
 import torch
 from omegaconf import DictConfig, OmegaConf
 from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
 
-from src.utils.technical_utils import load_obj
-from src.utils.utils import set_seed, save_useful_info
+from methazAI.utils.technical_utils import load_obj
+from methazAI.utils.utils import set_seed, save_useful_info
 
 warnings.filterwarnings("ignore")
 

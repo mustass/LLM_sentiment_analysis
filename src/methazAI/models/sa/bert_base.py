@@ -2,7 +2,7 @@ from omegaconf import DictConfig
 from regex import X
 from torch import nn
 
-from src.utils.technical_utils import load_obj
+from methazAI.utils.technical_utils import load_obj
 from transformers import BertForSequenceClassification
 
 
