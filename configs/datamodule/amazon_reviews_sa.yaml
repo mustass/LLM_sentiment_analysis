@@ -5,10 +5,9 @@ max_seq_length: 75 # Max review string length for the Tokenizer
 batch_size: 8
 train_len: 1000000
 num_workers: 1
-n_chunks: 50
 used_datasets: { # Which dataset do we want to join and load (I can't see a case where these are not the same)
                   "Books": 0,
-                  "Electronics": 0,
+                  "Electronics": 1,
                   "Movies_and_TV": 0,
                   "CDs_and_Vinyl": 0,
                   "Clothing_Shoes_and_Jewelry": 0,
@@ -29,7 +28,7 @@ used_datasets: { # Which dataset do we want to join and load (I can't see a case
                   "Patio_Lawn_and_Garden": 0,
                   "Baby": 0,
                   "Digital_Music": 0,
-                  "Musical_Instruments": 1,
+                  "Musical_Instruments": 0,
                   "Amazon_Instant_Video": 0
                   }
 pin_memory: True
