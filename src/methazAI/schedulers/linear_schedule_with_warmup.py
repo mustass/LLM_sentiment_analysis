@@ -18,9 +18,9 @@ class LinearScheduleWithWarmupConfig(LambdaLR):
         last_epoch: int = -1,
         epochs: int = 200,
         train_len: int = 6036000,
-        n_folds: int = 5,
+        #n_folds: int = 5,
     ) -> None:
-        len_train = train_len * (n_folds - 1) // n_folds
+        len_train = train_len# * (n_folds - 1) // n_folds
         self.num_warmup_steps = int(warmup_prop * epochs * len_train)
         self.num_training_steps = int(epochs * len_train)
 

@@ -199,14 +199,14 @@ def clean_data(config, wd):
     df["review"].replace("", np.nan, inplace=True)
     df.dropna(subset=["review"], inplace=True)
     df["score"].replace("", np.nan, inplace=True)
+    df["score"] = pd.to_numeric(df['score'],errors='coerce').astype(str)
     df.dropna(subset=["score"], inplace=True)
     print("Nr. rows dropped because containing NaN:", nrows - df.shape[0])
 
-    # nrows = df.shape[0]
-    # df = df[df['score'].isin()]
+    nrows = df.shape[0]
 
-    # print('Nr. rows dropped because score label was incorrect:',
-    #      nrows - df.shape[0])
+    df = df[df['score'].isin(['1.0','2.0','3.0','4.0','5.0'])]
+    print('Nr. rows dropped because score label was incorrect:',nrows - df.shape[0])
 
     # One hot encode score labels
     labelencoder = LabelEncoder()
