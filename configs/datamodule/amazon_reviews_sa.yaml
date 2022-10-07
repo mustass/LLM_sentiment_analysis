@@ -3,7 +3,7 @@ folder_path: ./data/SA_amazon_data
 train_val_test_splits: [0.6,0.2,0.2]
 max_seq_length: 75 # Max review string length for the Tokenizer
 batch_size: 8
-train_len: 100000
+train_len: 1000000
 num_workers: 1
 used_datasets: { # Which dataset do we want to join and load (I can't see a case where these are not the same)
                   "Books": 0,
@@ -14,7 +14,7 @@ used_datasets: { # Which dataset do we want to join and load (I can't see a case
                   "Home_and_Kitchen": 0,
                   "Kindle_Store": 0,
                   "Sports_and_Outdoors": 0,
-                  "Cell_Phones_and_Accessories": 1,
+                  "Cell_Phones_and_Accessories": 0,
                   "Health_and_Personal_Care": 0,
                   "Toys_and_Games": 0,
                   "Video_Games": 0,
