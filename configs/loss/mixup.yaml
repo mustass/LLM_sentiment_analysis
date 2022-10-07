@@ -1,1 +1,1 @@
-class_name: src.losses.losses.MixupLoss
+class_name: methazAI.losses.losses.MixupLoss
