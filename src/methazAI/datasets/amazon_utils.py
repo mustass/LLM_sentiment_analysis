@@ -1,3 +1,4 @@
+from cgitb import text
 import gzip
 import pickle
 import pandas as pd
@@ -82,16 +83,16 @@ def fetch_raw_dataset(dataset_name, wd):
 def handle_string(text_input, stop_words):
     text_input = remove_URL(text_input)
     text_input = remove_html(text_input)
-    text_input = remove_emojis(text_input)
-    text_input = remove_punct(text_input)
+    #text_input = remove_emojis(text_input)
+    #text_input = remove_punct(text_input)
     text_input = re.sub(" +", " ", text_input)
-
-    filtered_sentence = []
-    tokenized_sentence = word_tokenize(text_input)
-    for w in tokenized_sentence:
-        if w not in stop_words:
-            filtered_sentence.append(w)
-    return " ".join(filtered_sentence)
+    return text_input
+    #filtered_sentence = []
+    #tokenized_sentence = word_tokenize(text_input)
+    #for w in tokenized_sentence:
+    #    if w not in stop_words:
+    #        filtered_sentence.append(w)
+    #return " ".join(filtered_sentence)
 
 
 def download_if_not_existing(datasets, wd=""):
@@ -341,12 +342,12 @@ def read_in_chunks(file_object, chunk_size=1024):
 ### CODE STOLEN FROM https://medium.com/analytics-vidhya/data-cleaning-in-natural-language-processing-1f77ec1f6406 ####
 def remove_URL(text):
     url = re.compile(r"https?://\S+|www\.\S+")
-    return url.sub(r"", text)
+    return url.sub(r" ", text)
 
 
 def remove_html(text):
     html = re.compile(r"<.*?>")
-    return html.sub(r"", text)
+    return html.sub(r" ", text)
 
 
 def remove_emojis(text):
