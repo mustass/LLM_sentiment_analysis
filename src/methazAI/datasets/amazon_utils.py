@@ -20,7 +20,10 @@ from os.path import isfile, join
 from transformers import BertTokenizerFast
 from torch.utils.data import TensorDataset
 from nltk.corpus import stopwords
-from nltk.tokenize import word_tokenize
+from itertools import islice
+from pathlib import Path
+
+from yaml import load
 
 nltk.download("stopwords")
 nltk.download("popular")
@@ -233,35 +236,74 @@ def clean_data(config, wd):
         stratify=train_labels,
     )
 
-    tokenizer = BertTokenizerFast.from_pretrained("bert-base-uncased")
+    #tokenizer = BertTokenizerFast.from_pretrained("bert-base-uncased")
+    
+    train_text = train_text.tolist()
+    val_text = val_text.tolist()
+    test_text = test_text.tolist()
 
-    tokens_train = tokenizer(
-        train_text.tolist(), max_length=max_length, padding=True, truncation=True
-    )
+    with open(wd
+            + "/data/SA_amazon_data/interim/train_texts.txt", 'w') as f:
+        for line in train_text:
+            f.write(f"{line}\n")
+    
+    with open(wd
+            + "/data/SA_amazon_data/interim/val_texts.txt", 'w') as f:
+        for line in val_text:
+            f.write(f"{line}\n")
+    
+    with open(wd
+            + "/data/SA_amazon_data/interim/test_texts.txt", 'w') as f:
+        for line in test_text:
+            f.write(f"{line}\n")
 
-    # tokenize and encode sequences in the validation set
-    tokens_val = tokenizer(
-        val_text.tolist(), max_length=max_length, padding=True, truncation=True
-    )
+    f_train = open(wd
+            + "/data/SA_amazon_data/interim/train_texts.txt", "r")
 
-    # tokenize and encode sequences in the test set
-    tokens_test = tokenizer(
-        test_text.tolist(), max_length=max_length, padding=True, truncation=True
-    )
+
+    save(batch_encode(read_in_chunks(f_train),max_length),wd
+            + "/data/SA_amazon_data/interim/",'train')
+    
+    f_val = open(wd
+            + "/data/SA_amazon_data/interim/val_texts.txt", "r")
+    
+    save(batch_encode(read_in_chunks(f_val),max_length),wd
+            + "/data/SA_amazon_data/interim/",'val')
+
+    f_test = open(wd
+            + "/data/SA_amazon_data/interim/test_texts.txt", "r")
+    
+    save(batch_encode(read_in_chunks(f_test),max_length),wd
+            + "/data/SA_amazon_data/interim/",'test')
+    
+    train_input_ids = load_tensors(wd
+            + "/data/SA_amazon_data/interim/train_input_ids")
+    train_attention_masks = load_tensors(wd
+            + "/data/SA_amazon_data/interim/train_attention_masks")
+    
+    val_input_ids = load_tensors(wd
+            + "/data/SA_amazon_data/interim/val_input_ids")
+    val_attention_masks = load_tensors(wd
+            + "/data/SA_amazon_data/interim/val_attention_masks")
+
+    test_input_ids = load_tensors(wd
+            + "/data/SA_amazon_data/interim/test_input_ids")
+    test_attention_masks = load_tensors(wd
+            + "/data/SA_amazon_data/interim/test_attention_masks")
 
     train_data = TensorDataset(
-        torch.tensor(tokens_train["input_ids"]),
-        torch.tensor(tokens_train["attention_mask"]),
+        torch.tensor(train_input_ids),
+        torch.tensor(train_attention_masks),
         torch.tensor(train_labels.tolist()),
     )
     val_data = TensorDataset(
-        torch.tensor(tokens_val["input_ids"]),
-        torch.tensor(tokens_val["attention_mask"]),
+        torch.tensor(val_input_ids),
+        torch.tensor(val_attention_masks),
         torch.tensor(val_labels.tolist()),
     )
     test_data = TensorDataset(
-        torch.tensor(tokens_test["input_ids"]),
-        torch.tensor(tokens_test["attention_mask"]),
+        torch.tensor(test_input_ids),
+        torch.tensor(test_attention_masks),
         torch.tensor(test_labels.tolist()),
     )
 
@@ -329,15 +371,38 @@ def pickle_TensorDataset(dataset, experiment_name, dataset_name, wd):
     f.close()
 
 
-def read_in_chunks(file_object, chunk_size=1024):
+def read_in_chunks(file_object,):
     """Lazy function (generator) to read a file piece by piece.
     Default chunk size: 1k."""
-    while True:
-        data = file_object.read(chunk_size)
-        if not data:
-            break
-        yield data
+    for line in file_object:
+        yield line
+    
+def load_tensors(directory: str):
+    directory = Path(directory)
+    res = []
+    for file in directory.glob("*.pt"):
+        t = torch.load(file)
+        l = t.numpy().tolist()
+        res.append(l)
+    return res
 
+
+def batch_encode(generator, max_seq_len):
+    tokenizer = BertTokenizerFast.from_pretrained("bert-base-uncased")
+    for text in generator:
+        yield tokenizer(
+            text,
+            max_length=max_seq_len,
+            pad_to_max_length=True,
+            truncation=True,
+            return_token_type_ids=False,
+        )
+
+def save(encoding_generator,path,set):
+    check_and_create_data_subfolders(path,[f'{set}_input_ids',f'{set}_attention_masks'])
+    for i, encoded in enumerate(encoding_generator):
+        torch.save(torch.tensor(encoded['input_ids']),f'{path}{set}_input_ids/{i}.pt')
+        torch.save(torch.tensor(encoded['attention_mask']),f'{path}{set}_attention_masks/{i}.pt')
 
 ### CODE STOLEN FROM https://medium.com/analytics-vidhya/data-cleaning-in-natural-language-processing-1f77ec1f6406 ####
 def remove_URL(text):
@@ -381,3 +446,4 @@ def remove_punct(text):
     translation_dict = dict(zip(string.punctuation, [" "] * len(string.punctuation)))
     table = str.maketrans(translation_dict)
     return text.translate(table)
+
