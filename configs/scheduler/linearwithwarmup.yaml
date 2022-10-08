@@ -2,8 +2,6 @@ class_name: methazAI.schedulers.linear_schedule_with_warmup.LinearScheduleWithWa
 step: step
 monitor: train_${training.metric}
 params:
-  warmup_steps: 10000 
+  num_warmup_steps: 10000 
   last_epoch: -1
-  epochs: ${trainer.max_epochs}
-  train_len: ${datamodule.train_len}
-  #n_folds: ${datamodule.n_folds}
+  

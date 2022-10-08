@@ -14,23 +14,16 @@ class LinearScheduleWithWarmupConfig(LambdaLR):
     def __init__(
         self,
         optimizer: torch.optim.Optimizer,
-        warmup_steps: int,
+        num_warmup_steps: int,
+        epochs = int,
         last_epoch: int = -1,
-        epochs: int = 200,
-        train_len: int = 6036000,
-        # n_folds: int = 5,
+        num_training_steps: int = 6036000
     ) -> None:
-        len_train = train_len  # * (n_folds - 1) // n_folds
-        self.num_warmup_steps = warmup_steps
-        self.num_training_steps = int(epochs * len_train)
 
-        def lr_lambda(current_step: int) -> float:
-            if current_step < self.num_warmup_steps:
-                return float(current_step) / float(max(1, self.num_warmup_steps))
+        def lr_lambda(current_step: int):
+            if current_step < num_warmup_steps:
+                return float(current_step) / float(max(1, num_warmup_steps))
             return max(
-                0.0,
-                float(self.num_training_steps - current_step)
-                / float(max(1, self.num_training_steps - self.num_warmup_steps)),
+                0.0, float(num_training_steps - current_step) / float(max(1, num_training_steps - num_warmup_steps))
             )
-
         super().__init__(optimizer, lr_lambda, last_epoch)
