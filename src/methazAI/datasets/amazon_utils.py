@@ -16,7 +16,7 @@ import nltk
 import string
 from os import listdir
 from os.path import isfile, join
-from transformers import BertTokenizerFast
+from transformers import AutoTokenizer
 
 from pathlib import Path
 from datasets import Dataset
@@ -217,7 +217,7 @@ def clean_data(config, wd):
     train_testvalid = h_df.train_test_split(train_size=split,stratify_by_column='label')
     test_valid = train_testvalid["test"].train_test_split(train_size=0.5,stratify_by_column='label')
 
-    tokenizer = BertTokenizerFast.from_pretrained("bert-base-uncased")
+    tokenizer = AutoTokenizer.from_pretrained(config.tokenizer)
 
     train_data = train_testvalid["train"].map(
         lambda x: tokenizer(
@@ -339,48 +339,6 @@ def pickle_TensorDataset(dataset, experiment_name, dataset_name, wd):
     pickle.dump(dataset, f)
     f.close()
 
-
-def read_in_chunks(
-    file_object,
-):
-    """Lazy function (generator) to read a file piece by piece.
-    Default chunk size: 1k."""
-    for line in file_object:
-        yield line
-
-
-def load_tensors(directory: str):
-    directory = Path(directory)
-    res = []
-    for file in directory.glob("*.pt"):
-        t = torch.load(file)
-        l = t.numpy().tolist()
-        res.append(l)
-    return res
-
-
-def batch_encode(generator, max_seq_len):
-    tokenizer = BertTokenizerFast.from_pretrained("bert-base-uncased")
-    for text in generator:
-        yield tokenizer(
-            text,
-            max_length=max_seq_len,
-            pad_to_max_length=True,
-            truncation=True,
-            return_token_type_ids=False,
-        )
-
-
-def save(encoding_generator, path, set):
-    check_and_create_data_subfolders(
-        path, [f"{set}_input_ids", f"{set}_attention_masks"]
-    )
-    for i, encoded in enumerate(encoding_generator):
-        torch.save(torch.tensor(encoded["input_ids"]), f"{path}{set}_input_ids/{i}.pt")
-        torch.save(
-            torch.tensor(encoded["attention_mask"]),
-            f"{path}{set}_attention_masks/{i}.pt",
-        )
 
 
 ### CODE STOLEN FROM https://medium.com/analytics-vidhya/data-cleaning-in-natural-language-processing-1f77ec1f6406 ####
