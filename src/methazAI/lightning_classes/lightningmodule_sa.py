@@ -28,7 +28,7 @@ class LitSaModel(pl.LightningModule):
         optimizer = load_obj(self.cfg.optimizer.class_name)(
             self.model.parameters(), **self.cfg.optimizer.params
         )
-        if self.cfg.scheduler.class_name == 'methazAI.schedulers.linear_schedule_with_warmup.LinearScheduleWithWarmupConfig'
+        if self.cfg.scheduler.class_name == 'methazAI.schedulers.linear_schedule_with_warmup.LinearScheduleWithWarmupConfig':
             scheduler = load_obj(self.cfg.scheduler.class_name)(
                 optimizer, num_training_steps = self.steps_total, **self.cfg.scheduler.params,
             )

@@ -18,12 +18,8 @@ from os import listdir
 from os.path import isfile, join
 from transformers import BertTokenizerFast
 
-# from nltk.corpus import stopwords
 from pathlib import Path
 from datasets import Dataset
-
-# nltk.download("stopwords")
-# nltk.download("popular")
 
 
 def download_dataset(dataset_name, wd, chunk_size=8192):
@@ -212,7 +208,7 @@ def clean_data(config, wd):
     df.drop(["score", "category"], axis=1)
 
     h_df = Dataset.from_pandas(df)
-
+    h_df = h_df.class_encode_column('label')
     df = None
 
     train_testvalid = h_df.train_test_split(train_size=split,stratify_by_column='label')
