@@ -16,12 +16,12 @@ defaults:
   - override hydra/job_logging: colorlog
 
 general:
-  run_name: Basic_model_el_cell
+  run_name: BertModel_2layers_electronix
   logs_folder_name: logs
   workspace: dmiai-mh
   project_name: sentiment-analysis-tests
   device: cpu
-  log_code: True
+  log_code: False
   save_pytorch_model: True
   save_best: True
   convert_to_jit: True

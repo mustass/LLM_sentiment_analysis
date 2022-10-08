@@ -29,7 +29,7 @@ class AmazonDataModule(LightningDataModule):
         # called on every GPU
         datasets = self.load_datasets(
             f'{self.wd}/data/SA_amazon_data/processed/{self.config.datamodule["name"]}/'
-        ).with_format("torch")
+        )
         self.train = datasets["train"]
         self.val = datasets["val"]
         self.test = datasets["test"]
@@ -65,7 +65,7 @@ class AmazonDataModule(LightningDataModule):
                     "val": f"{folder_path}val.parquet",
                     "test": f"{folder_path}test.parquet",
                 },
-            )
+            ).with_format("torch")
             return datasets
         except Exception as ex:
             if type(ex) == FileNotFoundError:
