@@ -3,4 +3,4 @@ class_name: methazAI.models.sa.bert_base.BERT
 params:
   n_clas: 5
   finetune: True
-  dropout: 0.5
+  dropout: 0.1

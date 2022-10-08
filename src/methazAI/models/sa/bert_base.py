@@ -7,6 +7,7 @@ from methazAI.utils.technical_utils import load_obj
 from transformers import BertModel, BertForSequenceClassification
 import torch.nn.functional as F
 
+
 class BERT4SC(nn.Module):
     def __init__(self, cfg: DictConfig) -> None:
         """
@@ -17,11 +18,14 @@ class BERT4SC(nn.Module):
         """
         super().__init__()
 
-        self.model = BertForSequenceClassification.from_pretrained("bert-base-uncased", num_labels = cfg.model.params.n_clas, return_dict = cfg.model.params.return_dict)
+        self.model = BertForSequenceClassification.from_pretrained(
+            "bert-base-uncased",
+            num_labels=cfg.model.params.n_clas,
+            return_dict=cfg.model.params.return_dict,
+        )
 
-        #self.model.classifier.add_module('bert_activation', nn.ReLU())
-        #self.model.classifier.add_module('prediction', nn.Linear(cfg.model.params.hidden_size, cfg.model.params.n_clas))
-
+        # self.model.classifier.add_module('bert_activation', nn.ReLU())
+        # self.model.classifier.add_module('prediction', nn.Linear(cfg.model.params.hidden_size, cfg.model.params.n_clas))
 
         if cfg.model.params.finetune:
             for param in self.model.bert.parameters():
@@ -32,7 +36,8 @@ class BERT4SC(nn.Module):
 
     def forward(self, x, mask):
         output = self.model(x, mask)
-        return output['logits']
+        return output["logits"]
+
 
 class BERT(nn.Module):
     def __init__(self, cfg: DictConfig) -> None:
@@ -48,7 +53,6 @@ class BERT(nn.Module):
         self.dropout = nn.Dropout(cfg.model.params.dropout)
         self.linear = nn.Linear(768, cfg.model.params.n_clas)
 
-
         if cfg.model.params.finetune:
             for param in self.bert.parameters():
                 param.requires_grad = False
@@ -57,9 +61,11 @@ class BERT(nn.Module):
                 param.requires_grad = True
 
     def forward(self, input_id, mask):
-        _, pooled_output = self.bert(input_ids= input_id, attention_mask=mask,return_dict=False)
+        _, pooled_output = self.bert(
+            input_ids=input_id, attention_mask=mask, return_dict=False
+        )
         dropout_output = self.dropout(pooled_output)
         linear_output = self.linear(dropout_output)
         final_layer = F.relu(linear_output)
-        output = F.softmax(final_layer,dim=1)
+        output = F.softmax(final_layer, dim=1)
         return output

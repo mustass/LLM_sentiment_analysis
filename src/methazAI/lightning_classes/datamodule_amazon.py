@@ -27,10 +27,12 @@ class AmazonDataModule(LightningDataModule):
 
     def setup(self, stage: Optional[str] = None):
         # called on every GPU
-        datasets = self.load_datasets(f'{self.wd}/data/SA_amazon_data/processed/{self.config["name"]}/').with_format("torch")
-        self.train = datasets['train']
-        self.val = datasets['val']
-        self.test = datasets['test']
+        datasets = self.load_datasets(
+            f'{self.wd}/data/SA_amazon_data/processed/{self.config["name"]}/'
+        ).with_format("torch")
+        self.train = datasets["train"]
+        self.val = datasets["val"]
+        self.test = datasets["test"]
 
     def train_dataloader(self):
         return DataLoader(
@@ -55,10 +57,17 @@ class AmazonDataModule(LightningDataModule):
 
     def load_datasets(self, folder_path):
         try:
-            datasets = load_dataset("parquet", data_files={'train': f'{folder_path}train.parquet', 
-            'val': f'{folder_path}val.parquet',
-            'test': f'{folder_path}test.parquet'})
+            datasets = load_dataset(
+                "parquet",
+                data_files={
+                    "train": f"{folder_path}train.parquet",
+                    "val": f"{folder_path}val.parquet",
+                    "test": f"{folder_path}test.parquet",
+                },
+            )
             return datasets
         except Exception as ex:
             if type(ex) == FileNotFoundError:
-                raise FileNotFoundError(f"The datasets could not be found in {folder_path}")
+                raise FileNotFoundError(
+                    f"The datasets could not be found in {folder_path}"
+                )
