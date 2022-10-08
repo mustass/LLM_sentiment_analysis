@@ -1,0 +1,39 @@
+datamodule_name: methazAI.lightning_classes.datamodule_amazon.AmazonDataModule
+folder_path: ./data/SA_amazon_data
+tokenizer: bert-base-uncased
+train_val_test_splits: 0.9
+max_seq_length: 128 # Max review string length for the Tokenizer
+batch_size: 32
+train_len: 30000
+balance_classes: True
+n_per_class: 10000
+num_workers: 1
+used_datasets: { # Which dataset do we want to join and load (I can't see a case where these are not the same)
+                  "Books": 0,
+                  "Electronics": 0,
+                  "Movies_and_TV": 0,
+                  "CDs_and_Vinyl": 0,
+                  "Clothing_Shoes_and_Jewelry": 0,
+                  "Home_and_Kitchen": 0,
+                  "Kindle_Store": 0,
+                  "Sports_and_Outdoors": 0,
+                  "Cell_Phones_and_Accessories": 0,
+                  "Health_and_Personal_Care": 0,
+                  "Toys_and_Games": 0,
+                  "Video_Games": 0,
+                  "Tools_and_Home_Improvement": 0,
+                  "Beauty": 0,
+                  "Apps_for_Android": 0,
+                  "Office_Products": 0,
+                  "Pet_Supplies": 0,
+                  "Automotive": 0,
+                  "Grocery_and_Gourmet_Food": 0,
+                  "Patio_Lawn_and_Garden": 0,
+                  "Baby": 0,
+                  "Digital_Music": 0,
+                  "Musical_Instruments": 1,
+                  "Amazon_Instant_Video": 0
+                  }
+pin_memory: True
+name: music
+seed: 12

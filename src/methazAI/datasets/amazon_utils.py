@@ -16,7 +16,7 @@ import nltk
 import string
 from os import listdir
 from os.path import isfile, join
-from transformers import BertTokenizerFast
+from transformers import AutoTokenizer
 
 from pathlib import Path
 from datasets import Dataset
@@ -217,7 +217,7 @@ def clean_data(config, wd):
     train_testvalid = h_df.train_test_split(train_size=split,stratify_by_column='label')
     test_valid = train_testvalid["test"].train_test_split(train_size=0.5,stratify_by_column='label')
 
-    tokenizer = BertTokenizerFast.from_pretrained("bert-base-uncased")
+    tokenizer = AutoTokenizer.from_pretrained(config.tokenizer)
 
     train_data = train_testvalid["train"].map(
         lambda x: tokenizer(

@@ -1,0 +1,6 @@
+
+class_name: methazAI.models.sa.lilyuan.LilYuanModel
+params:
+  n_clas: 5
+  finetune: True
+  return_dict: False

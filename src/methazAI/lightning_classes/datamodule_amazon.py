@@ -1,7 +1,6 @@
 from pytorch_lightning import LightningDataModule
 from torch.utils.data import DataLoader
 from methazAI.datasets.amazon_utils import ensemble, clean_data
-import gzip, pickle
 from hydra.utils import get_original_cwd
 from typing import Optional
 from omegaconf import DictConfig
@@ -40,6 +39,7 @@ class AmazonDataModule(LightningDataModule):
             self.train,
             batch_size=self.config.datamodule["batch_size"],
             num_workers=self.config.datamodule["num_workers"],
+            shuffle=True
         )
 
     def val_dataloader(self):
