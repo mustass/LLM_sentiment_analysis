@@ -340,48 +340,6 @@ def pickle_TensorDataset(dataset, experiment_name, dataset_name, wd):
     f.close()
 
 
-def read_in_chunks(
-    file_object,
-):
-    """Lazy function (generator) to read a file piece by piece.
-    Default chunk size: 1k."""
-    for line in file_object:
-        yield line
-
-
-def load_tensors(directory: str):
-    directory = Path(directory)
-    res = []
-    for file in directory.glob("*.pt"):
-        t = torch.load(file)
-        l = t.numpy().tolist()
-        res.append(l)
-    return res
-
-
-def batch_encode(generator, max_seq_len):
-    tokenizer = BertTokenizerFast.from_pretrained("bert-base-uncased")
-    for text in generator:
-        yield tokenizer(
-            text,
-            max_length=max_seq_len,
-            pad_to_max_length=True,
-            truncation=True,
-            return_token_type_ids=False,
-        )
-
-
-def save(encoding_generator, path, set):
-    check_and_create_data_subfolders(
-        path, [f"{set}_input_ids", f"{set}_attention_masks"]
-    )
-    for i, encoded in enumerate(encoding_generator):
-        torch.save(torch.tensor(encoded["input_ids"]), f"{path}{set}_input_ids/{i}.pt")
-        torch.save(
-            torch.tensor(encoded["attention_mask"]),
-            f"{path}{set}_attention_masks/{i}.pt",
-        )
-
 
 ### CODE STOLEN FROM https://medium.com/analytics-vidhya/data-cleaning-in-natural-language-processing-1f77ec1f6406 ####
 def remove_URL(text):
