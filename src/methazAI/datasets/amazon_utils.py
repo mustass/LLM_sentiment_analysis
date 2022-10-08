@@ -7,7 +7,6 @@ import csv
 import requests
 import zlib
 import json
-from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 import torch
 from tqdm import tqdm
@@ -18,11 +17,13 @@ import string
 from os import listdir
 from os.path import isfile, join
 from transformers import BertTokenizerFast
-from nltk.corpus import stopwords
+
+# from nltk.corpus import stopwords
 from pathlib import Path
 from datasets import Dataset
-nltk.download("stopwords")
-nltk.download("popular")
+
+# nltk.download("stopwords")
+# nltk.download("popular")
 
 
 def download_dataset(dataset_name, wd, chunk_size=8192):
@@ -48,7 +49,6 @@ def download_dataset(dataset_name, wd, chunk_size=8192):
 
 
 def fetch_raw_dataset(dataset_name, wd):
-    stop_words = set(stopwords.words("english"))
     try:
         with open(
             wd + "/data/SA_amazon_data/external/" + dataset_name + ".bin", "rb"
@@ -64,11 +64,11 @@ def fetch_raw_dataset(dataset_name, wd):
                         obj = json.loads(review)
                         try:
                             sentence = f'{obj["textReview"]}'
-                            sentence = handle_string(sentence, stop_words)
+                            sentence = handle_string(sentence)
                             line = f"{sentence};{obj['overall']};{dataset_name}\n"
                         except KeyError:
                             sentence = f'{obj["reviewText"]}'
-                            sentence = handle_string(sentence, stop_words)
+                            sentence = handle_string(sentence)
                             line = f"{sentence};{obj['overall']};{dataset_name}\n"
 
                         outfile.write(line)
@@ -79,19 +79,19 @@ def fetch_raw_dataset(dataset_name, wd):
         fetch_raw_dataset(dataset_name, wd)
 
 
-def handle_string(text_input, stop_words):
+def handle_string(text_input):
     text_input = remove_URL(text_input)
     text_input = remove_html(text_input)
-    #text_input = remove_emojis(text_input)
-    #text_input = remove_punct(text_input)
+    # text_input = remove_emojis(text_input)
+    # text_input = remove_punct(text_input)
     text_input = re.sub(" +", " ", text_input)
     return text_input
-    #filtered_sentence = []
-    #tokenized_sentence = word_tokenize(text_input)
-    #for w in tokenized_sentence:
+    # filtered_sentence = []
+    # tokenized_sentence = word_tokenize(text_input)
+    # for w in tokenized_sentence:
     #    if w not in stop_words:
     #        filtered_sentence.append(w)
-    #return " ".join(filtered_sentence)
+    # return " ".join(filtered_sentence)
 
 
 def download_if_not_existing(datasets, wd=""):
@@ -162,7 +162,7 @@ def parse_datasets(config):
 def clean_data(config, wd):
     # Getting the rest of configs
     dataset_name = config["name"]
-    splits = config["train_val_test_splits"]
+    split = config["train_val_test_splits"]
     max_length = config["max_seq_length"]
     datasets = parse_datasets(config)
     print("Using following datasets: {}".format(datasets))
@@ -197,55 +197,88 @@ def clean_data(config, wd):
     df["review"].replace("", np.nan, inplace=True)
     df.dropna(subset=["review"], inplace=True)
     df["score"].replace("", np.nan, inplace=True)
-    df["score"] = pd.to_numeric(df['score'],errors='coerce').astype(str)
+    df["score"] = pd.to_numeric(df["score"], errors="coerce").astype(str)
     df.dropna(subset=["score"], inplace=True)
     print("Nr. rows dropped because containing NaN:", nrows - df.shape[0])
 
     nrows = df.shape[0]
 
-    df = df[df['score'].isin(['1.0','2.0','3.0','4.0','5.0'])]
-    print('Nr. rows dropped because score label was incorrect:',nrows - df.shape[0])
+    df = df[df["score"].isin(["1.0", "2.0", "3.0", "4.0", "5.0"])]
+    print("Nr. rows dropped because score label was incorrect:", nrows - df.shape[0])
 
     # One hot encode score labels
     labelencoder = LabelEncoder()
     df["label"] = labelencoder.fit_transform(df["score"])
-    df.drop(['score', 'category'], axis=1)
-    
+    df.drop(["score", "category"], axis=1)
+
     h_df = Dataset.from_pandas(df)
 
     df = None
 
-    train_testvalid = h_df.train_test_split(train_size = splits[0])
-    test_valid = train_testvalid['test'].train_test_split(train_size=0.5)
+    train_testvalid = h_df.train_test_split(train_size=split)
+    test_valid = train_testvalid["test"].train_test_split(train_size=0.5)
 
-    
     tokenizer = BertTokenizerFast.from_pretrained("bert-base-uncased")
 
-    train_data = train_testvalid['train'].map(lambda x: tokenizer(x["review"],max_length=max_length,
+    train_data = train_testvalid["train"].map(
+        lambda x: tokenizer(
+            x["review"],
+            max_length=max_length,
             pad_to_max_length=True,
             truncation=True,
-            return_token_type_ids=False),batched=True)
-    train_data = train_data.remove_columns(["review", "score", "category","__index_level_0__"])
-    train_data.set_format(type='torch', columns=['input_ids', 'attention_mask', 'label'])
+            return_token_type_ids=False,
+        ),
+        batched=True,
+    )
+    train_data = train_data.remove_columns(
+        ["review", "score", "category", "__index_level_0__"]
+    )
+    train_data.set_format(
+        type="torch", columns=["input_ids", "attention_mask", "label"]
+    )
 
-    val_data  = test_valid['test'].map(lambda x: tokenizer(x["review"],max_length=max_length,
+    val_data = test_valid["test"].map(
+        lambda x: tokenizer(
+            x["review"],
+            max_length=max_length,
             pad_to_max_length=True,
             truncation=True,
-            return_token_type_ids=False),batched=True)
-    val_data = val_data.remove_columns(["review", "score", "category","__index_level_0__"])
-    val_data.set_format(type='torch', columns=['input_ids', 'attention_mask', 'label'])
-    test_data = test_valid['train'].map(lambda x: tokenizer(x["review"],max_length=max_length,
+            return_token_type_ids=False,
+        ),
+        batched=True,
+    )
+    val_data = val_data.remove_columns(
+        ["review", "score", "category", "__index_level_0__"]
+    )
+    val_data.set_format(type="torch", columns=["input_ids", "attention_mask", "label"])
+    test_data = test_valid["train"].map(
+        lambda x: tokenizer(
+            x["review"],
+            max_length=max_length,
             pad_to_max_length=True,
             truncation=True,
-            return_token_type_ids=False),batched=True)
-    test_data = test_data.remove_columns(["review", "score", "category","__index_level_0__"])
-    test_data.set_format(type='torch', columns=['input_ids', 'attention_mask', 'label'])
-   
-    check_and_create_data_subfolders(f"{wd}/data/SA_amazon_data/processed/", subfolders=[dataset_name])
+            return_token_type_ids=False,
+        ),
+        batched=True,
+    )
+    test_data = test_data.remove_columns(
+        ["review", "score", "category", "__index_level_0__"]
+    )
+    test_data.set_format(type="torch", columns=["input_ids", "attention_mask", "label"])
 
-    train_data.to_parquet(f"{wd}/data/SA_amazon_data/processed/{dataset_name}/train.parquet")
-    val_data.to_parquet(f"{wd}/data/SA_amazon_data/processed/{dataset_name}/val.parquet")
-    test_data.to_parquet(f"{wd}/data/SA_amazon_data/processed/{dataset_name}/test.parquet")
+    check_and_create_data_subfolders(
+        f"{wd}/data/SA_amazon_data/processed/", subfolders=[dataset_name]
+    )
+
+    train_data.to_parquet(
+        f"{wd}/data/SA_amazon_data/processed/{dataset_name}/train.parquet"
+    )
+    val_data.to_parquet(
+        f"{wd}/data/SA_amazon_data/processed/{dataset_name}/val.parquet"
+    )
+    test_data.to_parquet(
+        f"{wd}/data/SA_amazon_data/processed/{dataset_name}/test.parquet"
+    )
 
     f = gzip.open(
         wd
@@ -307,12 +340,15 @@ def pickle_TensorDataset(dataset, experiment_name, dataset_name, wd):
     f.close()
 
 
-def read_in_chunks(file_object,):
+def read_in_chunks(
+    file_object,
+):
     """Lazy function (generator) to read a file piece by piece.
     Default chunk size: 1k."""
     for line in file_object:
         yield line
-    
+
+
 def load_tensors(directory: str):
     directory = Path(directory)
     res = []
@@ -334,11 +370,18 @@ def batch_encode(generator, max_seq_len):
             return_token_type_ids=False,
         )
 
-def save(encoding_generator,path,set):
-    check_and_create_data_subfolders(path,[f'{set}_input_ids',f'{set}_attention_masks'])
+
+def save(encoding_generator, path, set):
+    check_and_create_data_subfolders(
+        path, [f"{set}_input_ids", f"{set}_attention_masks"]
+    )
     for i, encoded in enumerate(encoding_generator):
-        torch.save(torch.tensor(encoded['input_ids']),f'{path}{set}_input_ids/{i}.pt')
-        torch.save(torch.tensor(encoded['attention_mask']),f'{path}{set}_attention_masks/{i}.pt')
+        torch.save(torch.tensor(encoded["input_ids"]), f"{path}{set}_input_ids/{i}.pt")
+        torch.save(
+            torch.tensor(encoded["attention_mask"]),
+            f"{path}{set}_attention_masks/{i}.pt",
+        )
+
 
 ### CODE STOLEN FROM https://medium.com/analytics-vidhya/data-cleaning-in-natural-language-processing-1f77ec1f6406 ####
 def remove_URL(text):
@@ -382,4 +425,3 @@ def remove_punct(text):
     translation_dict = dict(zip(string.punctuation, [" "] * len(string.punctuation)))
     table = str.maketrans(translation_dict)
     return text.translate(table)
-

@@ -43,9 +43,9 @@ class LitSaModel(pl.LightningModule):
         )
 
     def training_step(self, batch, batch_idx):
-        label = batch['label']
-        dat = batch['input_ids']
-        mask = batch['attention_mask']
+        label = batch["label"]
+        dat = batch["input_ids"]
+        mask = batch["attention_mask"]
         logits = self.model(dat, mask)
         loss = self.loss(logits, label)
         self.log(
@@ -66,9 +66,9 @@ class LitSaModel(pl.LightningModule):
         return loss
 
     def validation_step(self, batch, batch_idx):
-        label = batch['label']
-        dat = batch['input_ids']
-        mask = batch['attention_mask']
+        label = batch["label"]
+        dat = batch["input_ids"]
+        mask = batch["attention_mask"]
         logits = self.model(dat, mask)
         loss = self.loss(logits, label)
         self.log(
@@ -87,9 +87,9 @@ class LitSaModel(pl.LightningModule):
             )
 
     def test_step(self, batch, batch_idx):
-        label = batch['label']
-        dat = batch['input_ids']
-        mask = batch['attention_mask']
+        label = batch["label"]
+        dat = batch["input_ids"]
+        mask = batch["attention_mask"]
         logits = self.model(dat, mask)
         loss = self.loss(logits, label)
         self.log(
