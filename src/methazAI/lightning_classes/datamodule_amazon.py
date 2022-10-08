@@ -5,6 +5,7 @@ import gzip, pickle
 from hydra.utils import get_original_cwd
 from typing import Optional
 from omegaconf import DictConfig
+from datasets import load_dataset
 
 # This is hackidy-hacky:
 import os
@@ -26,9 +27,10 @@ class AmazonDataModule(LightningDataModule):
 
     def setup(self, stage: Optional[str] = None):
         # called on every GPU
-        self.train = self.load_datasets(self.wd, "train")
-        self.val = self.load_datasets(self.wd, "validate")
-        self.test = self.load_datasets(self.wd, "test")
+        datasets = self.load_datasets(f'{self.wd}/data/SA_amazon_data/processed/{self.config["name"]}/').with_format("torch")
+        self.train = datasets['train']
+        self.val = datasets['val']
+        self.test = datasets['test']
 
     def train_dataloader(self):
         return DataLoader(
@@ -51,11 +53,12 @@ class AmazonDataModule(LightningDataModule):
             num_workers=self.config["num_workers"],
         )
 
-    def load_datasets(self, folder_path, set_name):
-        path = f'{folder_path}/data/SA_amazon_data/processed/{self.config["name"]}/{set_name}.pklz'
+    def load_datasets(self, folder_path):
         try:
-            f = gzip.open(path, "rb")
-            return pickle.load(f, encoding="bytes")
+            datasets = load_dataset("parquet", data_files={'train': f'{folder_path}train.parquet', 
+            'val': f'{folder_path}val.parquet',
+            'test': f'{folder_path}test.parquet'})
+            return datasets
         except Exception as ex:
             if type(ex) == FileNotFoundError:
-                raise FileNotFoundError(f"The datasets could not be found in {path}")
+                raise FileNotFoundError(f"The datasets could not be found in {folder_path}")

@@ -2,6 +2,5 @@
 class_name: methazAI.models.sa.bert_base.BERT
 params:
   n_clas: 5
-  hidden_size: 200
   finetune: True
-  return_dict: True
+  dropout: 0.5

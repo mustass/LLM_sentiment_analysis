@@ -23,3 +23,6 @@ hydra-core
 pytorch-lightning
 hydra_colorlog
 rich
+datasets
+six
+filelock

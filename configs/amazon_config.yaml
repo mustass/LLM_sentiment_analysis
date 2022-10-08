@@ -9,14 +9,14 @@ defaults:
   - metric: accuracy
   - model: basic_bert_model
   - optimizer: adamw
-  - scheduler: plateau
+  - scheduler: linearwithwarmup
   - trainer: default_trainer
   - training: sa_training
   - override hydra/hydra_logging: colorlog
   - override hydra/job_logging: colorlog
 
 general:
-  run_name: Base_model_mini_dataset
+  run_name: Basic_model_el_cell
   logs_folder_name: logs
   workspace: dmiai-mh
   project_name: sentiment-analysis-tests
