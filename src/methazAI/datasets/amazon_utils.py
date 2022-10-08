@@ -207,6 +207,9 @@ def clean_data(config, wd):
     df["label"] = labelencoder.fit_transform(df["score"])
     df.drop(["score", "category"], axis=1)
 
+    if config.balance_classes:
+        df = df.groupby('score').sample(n=config.n_per_class, replace=True)
+
     h_df = Dataset.from_pandas(df)
     h_df = h_df.class_encode_column('label')
     df = None
@@ -294,6 +297,7 @@ def check_and_load_raw(file):
             file,
             error_bad_lines=False,
             delimiter=";",
+            warn_bad_lines=False,
             quoting=csv.QUOTE_NONE,
             names=["review", "score", "category"],
         )

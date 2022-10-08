@@ -1,9 +1,11 @@
 datamodule_name: methazAI.lightning_classes.datamodule_amazon.AmazonDataModule
 folder_path: ./data/SA_amazon_data
-train_val_test_splits: 0.8
+train_val_test_splits: 0.9
 max_seq_length: 128 # Max review string length for the Tokenizer
 batch_size: 32
 train_len: 30000
+balance_classes: True
+n_per_class: 250000
 num_workers: 1
 used_datasets: { # Which dataset do we want to join and load (I can't see a case where these are not the same)
                   "Books": 0,
@@ -32,5 +34,5 @@ used_datasets: { # Which dataset do we want to join and load (I can't see a case
                   "Amazon_Instant_Video": 0
                   }
 pin_memory: True
-name: music
+name: electronix
 seed: 12
