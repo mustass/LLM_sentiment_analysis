@@ -18,13 +18,9 @@ import string
 from os import listdir
 from os.path import isfile, join
 from transformers import BertTokenizerFast
-from torch.utils.data import TensorDataset
 from nltk.corpus import stopwords
-from itertools import islice
 from pathlib import Path
-
-from yaml import load
-
+from datasets import Dataset
 nltk.download("stopwords")
 nltk.download("popular")
 
@@ -166,7 +162,6 @@ def parse_datasets(config):
 def clean_data(config, wd):
     # Getting the rest of configs
     dataset_name = config["name"]
-    seed = config["seed"]
     splits = config["train_val_test_splits"]
     max_length = config["max_seq_length"]
     datasets = parse_datasets(config)
@@ -213,103 +208,44 @@ def clean_data(config, wd):
 
     # One hot encode score labels
     labelencoder = LabelEncoder()
-    df["score"] = labelencoder.fit_transform(df["score"])
-
-    # Run this if we want to see some info on string lengths
-    # check_string_lengths(df)
-    split1, split2 = check_splits(splits)
-
-    # split train dataset into train, validation and test sets
-    train_text, test_text, train_labels, test_labels = train_test_split(
-        df["review"],
-        df["score"],
-        random_state=seed,
-        test_size=split1,
-        stratify=df["score"],
-    )
-
-    train_text, val_text, train_labels, val_labels = train_test_split(
-        train_text,
-        train_labels,
-        random_state=seed,
-        test_size=split2,
-        stratify=train_labels,
-    )
-
-    #tokenizer = BertTokenizerFast.from_pretrained("bert-base-uncased")
+    df["label"] = labelencoder.fit_transform(df["score"])
+    df.drop(['score', 'category'], axis=1)
     
-    train_text = train_text.tolist()
-    val_text = val_text.tolist()
-    test_text = test_text.tolist()
+    h_df = Dataset.from_pandas(df)
 
-    with open(wd
-            + "/data/SA_amazon_data/interim/train_texts.txt", 'w') as f:
-        for line in train_text:
-            f.write(f"{line}\n")
+    df = None
+
+    train_testvalid = h_df.train_test_split(train_size = splits[0])
+    test_valid = train_testvalid['test'].train_test_split(train_size=0.5)
+
     
-    with open(wd
-            + "/data/SA_amazon_data/interim/val_texts.txt", 'w') as f:
-        for line in val_text:
-            f.write(f"{line}\n")
-    
-    with open(wd
-            + "/data/SA_amazon_data/interim/test_texts.txt", 'w') as f:
-        for line in test_text:
-            f.write(f"{line}\n")
+    tokenizer = BertTokenizerFast.from_pretrained("bert-base-uncased")
 
-    f_train = open(wd
-            + "/data/SA_amazon_data/interim/train_texts.txt", "r")
+    train_data = train_testvalid['train'].map(lambda x: tokenizer(x["review"],max_length=max_length,
+            pad_to_max_length=True,
+            truncation=True,
+            return_token_type_ids=False),batched=True)
+    train_data = train_data.remove_columns(["review", "score", "category","__index_level_0__"])
+    train_data.set_format(type='torch', columns=['input_ids', 'attention_mask', 'label'])
 
+    val_data  = test_valid['test'].map(lambda x: tokenizer(x["review"],max_length=max_length,
+            pad_to_max_length=True,
+            truncation=True,
+            return_token_type_ids=False),batched=True)
+    val_data = val_data.remove_columns(["review", "score", "category","__index_level_0__"])
+    val_data.set_format(type='torch', columns=['input_ids', 'attention_mask', 'label'])
+    test_data = test_valid['train'].map(lambda x: tokenizer(x["review"],max_length=max_length,
+            pad_to_max_length=True,
+            truncation=True,
+            return_token_type_ids=False),batched=True)
+    test_data = test_data.remove_columns(["review", "score", "category","__index_level_0__"])
+    test_data.set_format(type='torch', columns=['input_ids', 'attention_mask', 'label'])
+   
+    check_and_create_data_subfolders(f"{wd}/data/SA_amazon_data/processed/", subfolders=[dataset_name])
 
-    save(batch_encode(read_in_chunks(f_train),max_length),wd
-            + "/data/SA_amazon_data/interim/",'train')
-    
-    f_val = open(wd
-            + "/data/SA_amazon_data/interim/val_texts.txt", "r")
-    
-    save(batch_encode(read_in_chunks(f_val),max_length),wd
-            + "/data/SA_amazon_data/interim/",'val')
-
-    f_test = open(wd
-            + "/data/SA_amazon_data/interim/test_texts.txt", "r")
-    
-    save(batch_encode(read_in_chunks(f_test),max_length),wd
-            + "/data/SA_amazon_data/interim/",'test')
-    
-    train_input_ids = load_tensors(wd
-            + "/data/SA_amazon_data/interim/train_input_ids")
-    train_attention_masks = load_tensors(wd
-            + "/data/SA_amazon_data/interim/train_attention_masks")
-    
-    val_input_ids = load_tensors(wd
-            + "/data/SA_amazon_data/interim/val_input_ids")
-    val_attention_masks = load_tensors(wd
-            + "/data/SA_amazon_data/interim/val_attention_masks")
-
-    test_input_ids = load_tensors(wd
-            + "/data/SA_amazon_data/interim/test_input_ids")
-    test_attention_masks = load_tensors(wd
-            + "/data/SA_amazon_data/interim/test_attention_masks")
-
-    train_data = TensorDataset(
-        torch.tensor(train_input_ids),
-        torch.tensor(train_attention_masks),
-        torch.tensor(train_labels.tolist()),
-    )
-    val_data = TensorDataset(
-        torch.tensor(val_input_ids),
-        torch.tensor(val_attention_masks),
-        torch.tensor(val_labels.tolist()),
-    )
-    test_data = TensorDataset(
-        torch.tensor(test_input_ids),
-        torch.tensor(test_attention_masks),
-        torch.tensor(test_labels.tolist()),
-    )
-
-    pickle_TensorDataset(train_data, dataset_name, "train", wd)
-    pickle_TensorDataset(val_data, dataset_name, "validate", wd)
-    pickle_TensorDataset(test_data, dataset_name, "test", wd)
+    train_data.to_parquet(f"{wd}/data/SA_amazon_data/processed/{dataset_name}/train.parquet")
+    val_data.to_parquet(f"{wd}/data/SA_amazon_data/processed/{dataset_name}/val.parquet")
+    test_data.to_parquet(f"{wd}/data/SA_amazon_data/processed/{dataset_name}/test.parquet")
 
     f = gzip.open(
         wd
