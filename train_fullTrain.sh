@@ -13,4 +13,4 @@ module load cudnn/v8.3.2.44-prod-cuda-11.5
 pip install -e .
 wandb login a9a49618b7c9a34f36b1f55dfc6e9175e7962060
 echo "Running script..."
-python3 ./scripts/train_sa.py trainer.gpus=1 trainer.accelerator=gpu 
+python3 ./scripts/train_sa.py trainer.gpus=1 trainer.accelerator=gpu model.params.finetune=False general.run_name=BERTtrainFull scheduler.params.num_warmup_steps=5000

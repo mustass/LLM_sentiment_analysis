@@ -32,5 +32,5 @@ used_datasets: { # Which dataset do we want to join and load (I can't see a case
                   "Amazon_Instant_Video": 0
                   }
 pin_memory: True
-name: music
+name: electronix
 seed: 12
