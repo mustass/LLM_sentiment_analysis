@@ -53,7 +53,8 @@ def run(cfg: DictConfig) -> None:
 
     dm = load_obj(cfg.datamodule.datamodule_name)(cfg=cfg)
     dm.setup()
-    model = load_obj(cfg.training.lightning_module_name)(cfg=cfg)
+
+    model = load_obj(cfg.training.lightning_module_name)(cfg=cfg, steps_total= dm.t_total)
     trainer.fit(model, dm)
 
     if cfg.general.save_pytorch_model:

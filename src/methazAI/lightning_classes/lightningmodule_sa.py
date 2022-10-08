@@ -6,12 +6,13 @@ from methazAI.utils.technical_utils import load_obj
 
 
 class LitSaModel(pl.LightningModule):
-    def __init__(self, cfg: DictConfig):
+    def __init__(self, cfg: DictConfig, steps_total):
         super(LitSaModel, self).__init__()
         self.cfg = cfg
+        self.steps_total = steps_total
         self.model = load_obj(cfg.model.class_name)(cfg=cfg)
         self.loss = load_obj(cfg.loss.class_name)()
-
+        
         self.metrics = torch.nn.ModuleDict(
             {
                 self.cfg.metric.metric.metric_name: load_obj(
@@ -27,9 +28,15 @@ class LitSaModel(pl.LightningModule):
         optimizer = load_obj(self.cfg.optimizer.class_name)(
             self.model.parameters(), **self.cfg.optimizer.params
         )
-        scheduler = load_obj(self.cfg.scheduler.class_name)(
-            optimizer, **self.cfg.scheduler.params
-        )
+        if self.cfg.scheduler.class_name == 'methazAI.schedulers.linear_schedule_with_warmup.LinearScheduleWithWarmupConfig'
+            scheduler = load_obj(self.cfg.scheduler.class_name)(
+                optimizer, num_training_steps = self.steps_total, **self.cfg.scheduler.params,
+            )
+        else:
+            scheduler = load_obj(self.cfg.scheduler.class_name)(
+                optimizer, **self.cfg.scheduler.params
+            )
+
 
         return (
             [optimizer],

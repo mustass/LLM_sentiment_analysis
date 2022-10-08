@@ -33,6 +33,7 @@ class AmazonDataModule(LightningDataModule):
         self.train = datasets["train"]
         self.val = datasets["val"]
         self.test = datasets["test"]
+        self.t_total = len(self.train) // self.config["batch_size"]
 
     def train_dataloader(self):
         return DataLoader(

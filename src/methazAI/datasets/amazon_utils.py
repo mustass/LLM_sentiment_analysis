@@ -215,8 +215,8 @@ def clean_data(config, wd):
 
     df = None
 
-    train_testvalid = h_df.train_test_split(train_size=split)
-    test_valid = train_testvalid["test"].train_test_split(train_size=0.5)
+    train_testvalid = h_df.train_test_split(train_size=split,stratify_by_column='label')
+    test_valid = train_testvalid["test"].train_test_split(train_size=0.5,stratify_by_column='label')
 
     tokenizer = BertTokenizerFast.from_pretrained("bert-base-uncased")
 
