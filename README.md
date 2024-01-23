@@ -1,1 +1,1 @@
-## Metropolis-Hazelnuts team DM i AI repo
+## Repository for the Danish Championships in AI sentiment analysis task
